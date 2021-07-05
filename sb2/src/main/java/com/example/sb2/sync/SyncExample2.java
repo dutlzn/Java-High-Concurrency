@@ -6,7 +6,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Slf4j
-public class SyncExample1 {
+public class SyncExample2 {
     // 修饰一个代码块
     public void test1(int j) {
         synchronized (this) {
@@ -24,8 +24,8 @@ public class SyncExample1 {
     }
 
     public static void main(String[] args) {
-        SyncExample1 syncExample1 = new SyncExample1();
-        SyncExample1 syncExample2 = new SyncExample1();
+        SyncExample2 syncExample1 = new SyncExample2();
+        SyncExample2 syncExample2 = new SyncExample2();
         ExecutorService executorService = Executors.newCachedThreadPool();
         executorService.execute(() -> {
             syncExample1.test2(1);
