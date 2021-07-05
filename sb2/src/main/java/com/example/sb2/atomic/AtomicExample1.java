@@ -1,49 +1,53 @@
-package com.example.sb2;
+package com.example.sb2.atomic;
 
-
-import ch.qos.logback.core.util.ExecutorServiceUtil;
-import com.example.sb2.annoations.NotThreadSafe;
+import com.example.sb2.annoations.TreadSafe;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 每次运行结果不一样
+ * 原子性
  */
 @Slf4j
-@NotThreadSafe
-public class ConcurrencyTest {
+@TreadSafe
+public class AtomicExample1 {
     // 请求总数
     public static int clientTotal = 5000;
-    // 同时并发执行的线程数
+    // 同时执行并发数
     public static int threadTotal = 200;
-    public static int count = 0;
+    // 计数器
+    public static AtomicInteger count = new AtomicInteger(0);
+
+    private static void add() {
+        count.incrementAndGet();
+//        count.getAndIncrement()
+    }
+
 
     public static void main(String[] args) throws InterruptedException {
         ExecutorService executorService = Executors.newCachedThreadPool();
         final Semaphore semaphore = new Semaphore(threadTotal);
         final CountDownLatch countDownLatch = new CountDownLatch(clientTotal);
-        for(int i = 0;i < clientTotal; ++i) {
+        for(int i = 0;i<clientTotal;++i) {
             executorService.execute(() -> {
+                // 单个线程执行
                 try {
                     semaphore.acquire();
-                    add();
-                    semaphore.release();
-                } catch (Exception e) {
-                    log.error("exception", e);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-                countDownLatch.countDown();
+                add();
+                semaphore.release();
             });
+            countDownLatch.countDown();
         }
+
         countDownLatch.await();
         executorService.shutdown();
-        log.info("count:{}", count);
-    }
-
-    private static void add() {
-        count++;// ++ 不具有原子性
+        log.info("count:{}", count.get());
     }
 }
